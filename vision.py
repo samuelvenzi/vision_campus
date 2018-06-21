@@ -4,7 +4,10 @@ import yaml
 
 
 def main():
-    calibrate_color()
+    op = raw_input('Calibrate? (y/n)\n')
+    if op == 'y':
+        calibrate_color()
+    find_object()
 
 def nothing(x):
     pass
@@ -50,6 +53,30 @@ def calibrate_color():
                 yaml.dump(param, outfile, default_flow_style=False)
             break
     cv2.destroyAllWindows()
+
+
+def find_object():
+
+    cam = cv2.VideoCapture(0)
+
+    with open("data.yml", 'r') as stream:
+        try:
+            param = yaml.load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    minHSV = np.array(param['minHSV'])
+    maxHSV = np.array(param['maxHSV'])
+
+
+    while True:
+        ret_val, img = cam.read()
+        cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        mask = cv2.inRange(img, minHSV, maxHSV)
+        cv2.imshow('MASK',mask)
+        if cv2.waitKey(1) == 27:
+            break
 
 
 if __name__ == "__main__":
