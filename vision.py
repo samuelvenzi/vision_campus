@@ -47,6 +47,7 @@ def calibrate_color():
 
         # cv2.imshow('CAM',img)
         cv2.imshow('HSV',mask)
+        cv2.imshow('Source',img)
         if cv2.waitKey(1) == 115:
             print param
             with open('data.yml', 'w') as outfile:
@@ -74,9 +75,26 @@ def find_object():
         cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         mask = cv2.inRange(img, minHSV, maxHSV)
-        cv2.imshow('MASK',mask)
+
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        img = draw_biggest_contour(contours, img)
+        cv2.imshow('CONTOURS',img)
+
         if cv2.waitKey(1) == 27:
             break
+
+
+def draw_biggest_contour(contours, img):
+    min_area = 0
+    if len(contours) > 0:
+        areas = [cv2.contourArea(c) for c in contours]
+        max_index = np.argmax(areas)
+        cnt = contours[max_index]
+        x,y,w,h = cv2.boundingRect(cnt)
+        cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+
+    return img
 
 
 if __name__ == "__main__":
